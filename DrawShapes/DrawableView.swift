@@ -149,7 +149,7 @@ class DrawableView: UIControl {
         rectIsPending = true
         let newRect = ResizableRectangleView()
         newRect.frame = CGRect(x: location.x, y: location.y, width: 1, height: 1)
-        newRect.tintColor = self.tintColor
+        newRect.tintColor = UIColor(CGColor: self.colorPicker.color)
         self.currentRect = newRect
         self.originalLocation = location
         

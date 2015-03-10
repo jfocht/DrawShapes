@@ -14,6 +14,8 @@ import UIKit
 // http://paletton.com/palette.php?uid=3000X0klwRp4mZHcNVftUOUKwCk
 // http://paletton.com/palette.php?uid=32v0y0kqNux9rJVhSxvzmoMHwiT
 
+let YellowColor = UIColor(red: 1.00, green: 1.00, blue: 0.329, alpha: 1.0)
+
 let colors = [
     UIColor(red: 0, green: 0, blue: 0, alpha: 1.0),
     UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0),
@@ -21,7 +23,7 @@ let colors = [
     UIColor(red: 0.49, green: 0.125, blue: 0.635, alpha: 1.0),
     UIColor(red: 0.357, green: 0.522, blue: 0.902, alpha: 1.0),
     UIColor(red: 0.541, green: 0.867, blue: 0.141, alpha: 1.0),
-    UIColor(red: 1.00, green: 1.00, blue: 0.329, alpha: 1.0),
+    YellowColor,
     UIColor(red: 0.953, green: 0.361, blue: 0.157, alpha: 1.0)
 ].map { $0.CGColor }
 
@@ -46,11 +48,15 @@ class ColorPicker: UIControl {
         }
     }
 
-    private var color: CGColor? {
+    var color: CGColor {
+        get {
+            return self._color
+        }
+    }
+    
+    private var _color: CGColor = YellowColor.CGColor {
         didSet {
-            if let color = color {
-                self.delegate?.colorPicker(self, didChangeColor: color)
-            }
+            self.delegate?.colorPicker(self, didChangeColor: _color)
         }
     }
 
@@ -91,7 +97,7 @@ class ColorPicker: UIControl {
             }
         }
         if minDistance != CGFloat.max {
-            self.color = newColor
+            _color = newColor
         }
     }
 
