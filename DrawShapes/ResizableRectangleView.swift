@@ -15,6 +15,11 @@ private let DefaultStrokeTint = UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 
 private let ClearColor = UIColor.clearColor().CGColor
 private let DefaultCircleRadius: CGFloat = 8
 
+protocol ResizableRectangleViewDelegate : class {
+    func didSelectResizableRectangleView(view: ResizableRectangleView)
+    func didDeselectResizableRectangleView(view: ResizableRectangleView)
+}
+
 class ResizableRectangleView: UIControl {
     private var borderLayer: CALayer = CALayer()
     private var topLeftCircle = CALayer()
@@ -22,9 +27,9 @@ class ResizableRectangleView: UIControl {
     private var bottomLeftCircle = CALayer()
     private var bottomRightCircle = CALayer()
 
+    weak var delegate: ResizableRectangleViewDelegate?
     var strokeTintColor: CGColor = DefaultStrokeTint
     var circleRadius: CGFloat = DefaultCircleRadius
-
 
     override var frame: CGRect {
         get {
@@ -33,6 +38,23 @@ class ResizableRectangleView: UIControl {
         set {
             super.frame = newValue
             self.updateLayers()
+        }
+    }
+
+    override var selected: Bool {
+        get {
+            return super.selected
+        }
+        set {
+            var changed = self.selected != newValue
+            super.selected = newValue
+            if changed {
+                if selected {
+                    self.delegate?.didSelectResizableRectangleView(self)
+                } else {
+                    self.delegate?.didDeselectResizableRectangleView(self)
+                }
+            }
         }
     }
 
@@ -110,8 +132,10 @@ class ResizableRectangleView: UIControl {
         }
         if let anchor = anchor {
             if let corner = corner {
+                self.didMove = true
                 self.selected = true
                 self.trackingFrameTransform = self.updateRect(anchor, initialTouchLocation: location, originalCorner: corner)
+                self.updateLayers()
             }
         }
         
