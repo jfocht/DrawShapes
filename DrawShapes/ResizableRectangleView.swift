@@ -14,6 +14,7 @@ private let DefaultTint = UIColor(red: 0, green: 164 / 255.0, blue: 1.0, alpha: 
 private let DefaultStrokeTint = UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0).CGColor
 private let ClearColor = UIColor.clearColor().CGColor
 private let DefaultCircleRadius: CGFloat = 8
+private let CornerTouchSize: CGFloat = 44
 
 protocol ResizableRectangleViewDelegate : class {
     func didSelectResizableRectangleView(view: ResizableRectangleView)
@@ -70,11 +71,13 @@ class ResizableRectangleView: UIControl {
                 layer.contentsScale = UIScreen.mainScreen().scale
             }
         }
-        updateCircleLayer(topLeftCircle, point: CGPoint(x: bounds.origin.x, y: bounds.origin.y))
-        updateCircleLayer(topRightCircle, point: CGPoint(x: bounds.origin.x, y: CGRectGetMaxY(bounds) - 2 * circleRadius))
-        updateCircleLayer(bottomLeftCircle, point: CGPoint(x: CGRectGetMaxX(bounds) - 2 * circleRadius, y: bounds.origin.y))
-        updateCircleLayer(bottomRightCircle, point: CGPoint(x: CGRectGetMaxX(bounds) - 2 * circleRadius, y: CGRectGetMaxY(bounds) - 2 * circleRadius))
+
         self.updateBorderLayer()
+        let circleFrame = self.borderLayer.frame
+        updateCircleLayer(topLeftCircle, center: CGPoint(x: circleFrame.origin.x, y: circleFrame.origin.y))
+        updateCircleLayer(topRightCircle, center: CGPoint(x: circleFrame.origin.x, y: CGRectGetMaxY(circleFrame)))
+        updateCircleLayer(bottomLeftCircle, center: CGPoint(x: CGRectGetMaxX(circleFrame), y: circleFrame.origin.y))
+        updateCircleLayer(bottomRightCircle, center: CGPoint(x: CGRectGetMaxX(circleFrame), y: CGRectGetMaxY(circleFrame)))
     }
 
     var trackingFrameTransform: (CGPoint -> ())?
@@ -89,8 +92,10 @@ class ResizableRectangleView: UIControl {
         let targetY = originalCorner.y + location.y - initialTouchLocation.y
         self.frame.origin.x = min(targetX, anchor.x)
         self.frame.origin.y = min(targetY, anchor.y)
-        self.frame.size.width = max(self.circleRadius, abs(anchor.x - targetX))
-        self.frame.size.height = max(self.circleRadius, abs(anchor.y - targetY))
+
+        let minSize = (CornerTouchSize - (self.circleRadius * 2)) / 2 + circleRadius + 2
+        self.frame.size.width = max(minSize * 2, abs(anchor.x - targetX))
+        self.frame.size.height = max(minSize * 2, abs(anchor.y - targetY))
     }
 
     override func beginTrackingWithTouch(touch: UITouch, withEvent event: UIEvent) -> Bool {
@@ -113,18 +118,18 @@ class ResizableRectangleView: UIControl {
         let location = touch.locationInView(self.superview)
         var anchor: CGPoint?
         var corner: CGPoint?
-        let touchWidth: CGFloat = 44
+
         switch (location.x, location.y) {
-        case (let x, let y) where x < self.frame.origin.x + touchWidth && y < self.frame.origin.y + touchWidth:
+        case (let x, let y) where x < self.frame.origin.x + CornerTouchSize && y < self.frame.origin.y + CornerTouchSize:
             anchor = CGPoint(x: CGRectGetMaxX(self.frame), y: CGRectGetMaxY(self.frame))
             corner = CGPoint(x: CGRectGetMinX(self.frame), y: CGRectGetMinY(self.frame))
-        case (let x, let y) where x < self.frame.origin.x + touchWidth && y > CGRectGetMaxY(self.frame) - touchWidth:
+        case (let x, let y) where x < self.frame.origin.x + CornerTouchSize && y > CGRectGetMaxY(self.frame) - CornerTouchSize:
             anchor = CGPoint(x: CGRectGetMaxX(self.frame), y: CGRectGetMinY(self.frame))
             corner = CGPoint(x: CGRectGetMinX(self.frame), y: CGRectGetMaxY(self.frame))
-        case (let x, let y) where x > CGRectGetMaxX(self.frame) - touchWidth && y < self.frame.origin.y + touchWidth:
+        case (let x, let y) where x > CGRectGetMaxX(self.frame) - CornerTouchSize && y < self.frame.origin.y + CornerTouchSize:
             anchor = CGPoint(x: CGRectGetMinX(self.frame), y: CGRectGetMaxY(self.frame))
             corner = CGPoint(x: CGRectGetMaxX(self.frame), y: CGRectGetMinY(self.frame))
-        case (let x, let y) where x > CGRectGetMaxX(self.frame) - touchWidth && y > CGRectGetMaxY(self.frame) - touchWidth:
+        case (let x, let y) where x > CGRectGetMaxX(self.frame) - CornerTouchSize && y > CGRectGetMaxY(self.frame) - CornerTouchSize:
             anchor = CGPoint(x: CGRectGetMinX(self.frame), y: CGRectGetMinY(self.frame))
             corner = CGPoint(x: CGRectGetMaxX(self.frame), y: CGRectGetMaxY(self.frame))
         default:
@@ -138,11 +143,11 @@ class ResizableRectangleView: UIControl {
                 self.updateLayers()
             }
         }
-        
+
         CATransaction.commit()
         return true
     }
-    
+
     var didMove = false
 
     override func continueTrackingWithTouch(touch: UITouch, withEvent event: UIEvent) -> Bool {
@@ -153,7 +158,7 @@ class ResizableRectangleView: UIControl {
         let location = touch.locationInView(self.superview)
         self.trackingFrameTransform?(location)
         self.updateLayers()
-        
+
         CATransaction.commit()
         return true
     }
@@ -168,13 +173,13 @@ class ResizableRectangleView: UIControl {
         didMove = false
         self.updateLayers()
         self.trackingFrameTransform = nil
-        
+
         CATransaction.commit()
     }
 
-    func updateCircleLayer(layer: CALayer, point: CGPoint) {
+    func updateCircleLayer(layer: CALayer, center: CGPoint) {
         layer.hidden = !self.selected
-        layer.frame = CGRect(x: point.x, y: point.y, width: 2 * circleRadius, height: 2 * circleRadius)
+        layer.frame = CGRect(x: center.x - circleRadius, y: center.y - circleRadius, width: 2 * circleRadius, height: 2 * circleRadius)
         layer.backgroundColor = self.tintColor.CGColor
         layer.borderColor = strokeTintColor
         layer.cornerRadius = self.circleRadius
@@ -186,7 +191,8 @@ class ResizableRectangleView: UIControl {
         self.borderLayer.masksToBounds = false
         self.borderLayer.borderWidth = 1
         self.borderLayer.borderColor = self.tintColor.CGColor
-        self.borderLayer.frame = CGRectInset(self.bounds, self.circleRadius, self.circleRadius)
+        let circleInset = (CornerTouchSize - (self.circleRadius * 2)) / 2
+        self.borderLayer.frame = CGRectInset(self.bounds, self.circleRadius + circleInset, self.circleRadius + circleInset)
         self.borderLayer.setNeedsDisplay()
     }
 

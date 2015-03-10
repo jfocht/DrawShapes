@@ -9,18 +9,10 @@
 import Foundation
 import UIKit
 
-// Color Palette
-// Black 0, 0, 0
-// http://paletton.com/palette.php?uid=3000X0klwRp4mZHcNVftUOUKwCk
-// Red 100, 32.9, 32.9
-// Blue 35.7, 52.2, 90.2
-// Yellow 100, 100, 32.9
-// http://paletton.com/palette.php?uid=32v0y0kqNux9rJVhSxvzmoMHwiT
-// Green 54.1, 86.7, 14.1
-// Orange 95.3, 36.1, 15.7
-// Purple 49, 12.5, 63.5
+// Color Palettes
 //
-// White 100, 100, 100
+// http://paletton.com/palette.php?uid=3000X0klwRp4mZHcNVftUOUKwCk
+// http://paletton.com/palette.php?uid=32v0y0kqNux9rJVhSxvzmoMHwiT
 
 let colors = [
     UIColor(red: 0, green: 0, blue: 0, alpha: 1.0),
