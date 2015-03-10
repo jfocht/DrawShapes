@@ -79,6 +79,10 @@ class ResizableRectangleView: UIControl {
         updateCircleLayer(bottomLeftCircle, center: CGPoint(x: CGRectGetMaxX(circleFrame), y: circleFrame.origin.y))
         updateCircleLayer(bottomRightCircle, center: CGPoint(x: CGRectGetMaxX(circleFrame), y: CGRectGetMaxY(circleFrame)))
     }
+    
+    func borderedFrame() -> CGRect {
+        return self.borderLayer.frame
+    }
 
     var trackingFrameTransform: (CGPoint -> ())?
 
@@ -93,7 +97,7 @@ class ResizableRectangleView: UIControl {
         self.frame.origin.x = min(targetX, anchor.x)
         self.frame.origin.y = min(targetY, anchor.y)
 
-        let minSize = (CornerTouchSize - (self.circleRadius * 2)) / 2 + circleRadius + 2
+        let minSize = self.inset() + circleRadius
         self.frame.size.width = max(minSize * 2, abs(anchor.x - targetX))
         self.frame.size.height = max(minSize * 2, abs(anchor.y - targetY))
     }
@@ -187,12 +191,17 @@ class ResizableRectangleView: UIControl {
         layer.setNeedsDisplay()
     }
 
+    func inset() -> CGFloat {
+        let circleInset = (CornerTouchSize - (self.circleRadius * 2)) / 2
+        return self.circleRadius + circleInset
+    }
+
     func updateBorderLayer() {
         self.borderLayer.masksToBounds = false
         self.borderLayer.borderWidth = 1
         self.borderLayer.borderColor = self.tintColor.CGColor
-        let circleInset = (CornerTouchSize - (self.circleRadius * 2)) / 2
-        self.borderLayer.frame = CGRectInset(self.bounds, self.circleRadius + circleInset, self.circleRadius + circleInset)
+        let inset = self.inset()
+        self.borderLayer.frame = CGRectInset(self.bounds, inset, inset)
         self.borderLayer.setNeedsDisplay()
     }
 
