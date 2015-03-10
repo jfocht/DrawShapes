@@ -84,7 +84,10 @@ class ResizableRectangleView: UIControl {
                     }
                 }
             }
+            superview.bringSubviewToFront(self)
         }
+
+
         let location = touch.locationInView(self.superview)
         var anchor: CGPoint?
         var corner: CGPoint?
