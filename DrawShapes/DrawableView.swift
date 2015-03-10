@@ -177,14 +177,9 @@ class DrawableView: UIControl {
             CATransaction.setDisableActions(true)
             if let originalLocation = self.originalLocation {
                 let location = touch.locationInView(self)
-                let newX = min(originalLocation.x, location.x)
-                let newY = min(originalLocation.y, location.y)
-                let width = max(10, abs(originalLocation.x - location.x))
-                let height = max(10, abs(originalLocation.y - location.y))
-                let newFrame = CGRectMake(newX, newY, width, height)
-                currentRect.frame = newFrame
-                CATransaction.commit()
+                currentRect.updateRect(originalLocation, initialTouchLocation: originalLocation, originalCorner: originalLocation)(location: location)
             }
+            CATransaction.commit()
         }
         return super.continueTrackingWithTouch(touch, withEvent: event)
     }
