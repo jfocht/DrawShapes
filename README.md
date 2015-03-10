@@ -1,4 +1,5 @@
 Draw Shapes
 ===========
 
-Draw and edit rectangles with this app.
+This example demonstrates how to draw and edit rectangles using a custom
+UIControl.
