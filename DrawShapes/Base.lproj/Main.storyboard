@@ -12,15 +12,41 @@
                         <viewControllerLayoutGuide type="top" id="y3c-jy-aDJ"/>
                         <viewControllerLayoutGuide type="bottom" id="wfy-db-euE"/>
                     </layoutGuides>
-                    <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC" customClass="DrawableView" customModule="DrawShapes" customModuleProvider="target">
+                    <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="hand.jpg" translatesAutoresizingMaskIntoConstraints="NO" id="fnn-j8-OYq">
+                                <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                            </imageView>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Oof-GP-k3A" customClass="DrawableView" customModule="DrawShapes" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                            </view>
+                        </subviews>
                         <color key="backgroundColor" cocoaTouchSystemColor="darkTextColor"/>
                         <gestureRecognizers/>
+                        <constraints>
+                            <constraint firstItem="Oof-GP-k3A" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="9mk-bv-5jt"/>
+                            <constraint firstAttribute="trailing" secondItem="fnn-j8-OYq" secondAttribute="trailing" id="FCV-56-RtD"/>
+                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="Oof-GP-k3A" secondAttribute="bottom" id="GR6-l1-aEc"/>
+                            <constraint firstItem="Oof-GP-k3A" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="-20" id="Ioz-0I-kIx"/>
+                            <constraint firstItem="fnn-j8-OYq" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="NeE-5x-yH5"/>
+                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="fnn-j8-OYq" secondAttribute="bottom" id="OG6-yd-7s9"/>
+                            <constraint firstItem="fnn-j8-OYq" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="-20" id="PSR-dP-ay9"/>
+                            <constraint firstAttribute="trailing" secondItem="Oof-GP-k3A" secondAttribute="trailing" id="ffH-9U-bRh"/>
+                        </constraints>
                     </view>
+                    <connections>
+                        <outlet property="drawable" destination="Oof-GP-k3A" id="3fo-w8-yWb"/>
+                        <outlet property="imageView" destination="fnn-j8-OYq" id="I2E-Dv-vKO"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
         </scene>
     </scenes>
+    <resources>
+        <image name="hand.jpg" width="2400" height="3020"/>
+    </resources>
 </document>

@@ -79,7 +79,7 @@ class ResizableRectangleView: UIControl {
         updateCircleLayer(bottomLeftCircle, center: CGPoint(x: CGRectGetMaxX(circleFrame), y: circleFrame.origin.y))
         updateCircleLayer(bottomRightCircle, center: CGPoint(x: CGRectGetMaxX(circleFrame), y: CGRectGetMaxY(circleFrame)))
     }
-    
+
     func borderedFrame() -> CGRect {
         return self.borderLayer.frame
     }
@@ -87,19 +87,34 @@ class ResizableRectangleView: UIControl {
     var trackingFrameTransform: (CGPoint -> ())?
 
     func moveFrame(originalFrame: CGRect, initialTouchLocation: CGPoint)(location: CGPoint) {
-        self.frame.origin.x = originalFrame.origin.x + location.x - initialTouchLocation.x
-        self.frame.origin.y = originalFrame.origin.y + location.y - initialTouchLocation.y
+        let targetX = originalFrame.origin.x + location.x - initialTouchLocation.x
+        let targetY = originalFrame.origin.y + location.y - initialTouchLocation.y
+        let insetBounds = self.insetBounds()
+        self.frame.origin.x = max(insetBounds.origin.x, min(CGRectGetMaxX(insetBounds) - CGRectGetWidth(self.frame), targetX))
+        self.frame.origin.y = max(insetBounds.origin.y, min(CGRectGetMaxY(insetBounds) - CGRectGetHeight(self.frame), targetY))
+    }
+
+    private func insetBounds() -> CGRect {
+        let inset = self.inset()
+        let contentBounds = (self.superview as? DrawableView)?.contentBounds ?? self.bounds
+        return CGRectInset(contentBounds, -inset, -inset)
     }
 
     func updateRect(anchor: CGPoint, initialTouchLocation: CGPoint, originalCorner: CGPoint)(location: CGPoint) {
-        let targetX = originalCorner.x + location.x - initialTouchLocation.x
-        let targetY = originalCorner.y + location.y - initialTouchLocation.y
-        self.frame.origin.x = min(targetX, anchor.x)
-        self.frame.origin.y = min(targetY, anchor.y)
-
+        let insetBounds = self.insetBounds()
+        var locationX = max(insetBounds.origin.x, min(CGRectGetMaxX(insetBounds), location.x))
+        var locationY = max(insetBounds.origin.y, min(CGRectGetMaxY(insetBounds), location.y))
+        var targetX = originalCorner.x + locationX - initialTouchLocation.x
+        var targetY = originalCorner.y + locationY - initialTouchLocation.y
         let minSize = self.inset() + circleRadius
-        self.frame.size.width = max(minSize * 2, abs(anchor.x - targetX))
-        self.frame.size.height = max(minSize * 2, abs(anchor.y - targetY))
+        if insetBounds.origin.x < targetX && targetX < CGRectGetMaxX(insetBounds) {
+            self.frame.origin.x = min(targetX, anchor.x)
+            self.frame.size.width = max(minSize * 2, abs(anchor.x - targetX))
+        }
+        if insetBounds.origin.y < targetY && targetY < CGRectGetMaxY(insetBounds) {
+            self.frame.origin.y = min(targetY, anchor.y)
+            self.frame.size.height = max(minSize * 2, abs(anchor.y - targetY))
+        }
     }
 
     override func beginTrackingWithTouch(touch: UITouch, withEvent event: UIEvent) -> Bool {

@@ -11,25 +11,26 @@ import UIKit
 
 
 class ViewController: UIViewController {
-
+    @IBOutlet weak var drawable: DrawableView!
+    @IBOutlet weak var imageView: UIImageView!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         // Do any additional setup after loading the view, typically from a nib.
-        self.view.becomeFirstResponder()
-
-        if let view = self.view as? DrawableView {
-            let origins = [(0, 0), (0.5, 0), (0, 0.5), (0.5, 0.5)].map(CGPointMake)
-            let color = UIColor.redColor()
-            let size = CGSize(width: 0.5, height: 0.5)
-            view.shapes = origins.map { ColoredRect(color: color, origin: $0, size: size) }
+        self.drawable.becomeFirstResponder()
+        
+        if let imageView = self.imageView {
+            if let imageSize = imageView.image?.size {
+                self.drawable.contentSize = imageSize
+            }
         }
     }
-
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-
-
+    
+    
 }

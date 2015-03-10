@@ -13,19 +13,19 @@ struct ColoredRect {
     let color: UIColor
     let origin: CGPoint
     let size: CGSize
-
+    
     var width: CGFloat {
         get {
             return self.size.width
         }
     }
-
+    
     var height: CGFloat {
         get {
             return self.size.height
         }
     }
-
+    
 }
 
 class DrawableView: UIControl {
@@ -33,21 +33,35 @@ class DrawableView: UIControl {
     private var currentRect: ResizableRectangleView?
     private var originalLocation: CGPoint?
     private var rectIsPending = false
-
+    
+    var contentSize: CGSize?
+    var contentBounds: CGRect? {
+        get {
+            if let contentSize = self.contentSize {
+                let scale = min(CGRectGetWidth(self.bounds) / contentSize.width, CGRectGetHeight(self.bounds) / contentSize.height)
+                let scaledWidth = contentSize.width * scale
+                let scaledHeight = contentSize.height * scale
+                let x = round(0.5 * (CGRectGetWidth(self.bounds) - scaledWidth))
+                let y = round(0.5 * (CGRectGetHeight(self.bounds) - scaledHeight))
+                return CGRectMake(x, y, scaledWidth, scaledHeight)
+            } else {
+                return nil
+            }
+        }
+    }
+    
     var shapes: [ColoredRect] {
         get {
             var shapes = [ColoredRect]()
             for view in self.subviews {
                 if let view = view as? ResizableRectangleView {
                     let f = view.convertRect(view.borderedFrame(), toView: self)
-                    NSLog("borderedFrame = \(f)")
                     let relX = min(1.0, max(0.0, f.origin.x / self.bounds.width))
                     let relY = min(1.0, max(0.0, f.origin.y / self.bounds.height))
                     let relWidth = min(1.0, max(0.0, f.width / self.bounds.width))
                     let relHeight = min(1.0, max(0.0, f.height / self.bounds.height))
                     let relOrigin = CGPointMake(relX, relY)
                     let relSize = CGSizeMake(relWidth, relHeight)
-                    NSLog("origin = \(relOrigin); size = \(relSize)")
                     let rect = ColoredRect(color: view.tintColor, origin: relOrigin, size: relSize)
                     shapes.append(rect)
                 }
@@ -78,62 +92,67 @@ class DrawableView: UIControl {
             self.bringSubviewToFront(self.colorPicker)
         }
     }
-
+    
     override init() {
         super.init()
         self.addColorPicker()
     }
-
+    
     required init(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         self.addColorPicker()
     }
-
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         self.addColorPicker()
     }
-
+    
     override func awakeFromNib() {
         super.awakeFromNib()
-
+        
         self.addColorPicker()
     }
-
+    
     private func addColorPicker() {
         colorPicker.delegate = self
         colorPicker.alpha = 0
         self.addSubview(colorPicker)
         self.bringSubviewToFront(self.colorPicker)
         colorPicker.frame = CGRect(x: self.bounds.width - 44, y: 0, width: 44, height: self.bounds.height)
-
+        
     }
-
+    
     override func layoutSubviews() {
         super.layoutSubviews()
-
+        
         colorPicker.frame = CGRect(x: self.bounds.width - 44, y: 0, width: 44, height: self.bounds.height)
     }
-
+    
     override func canBecomeFirstResponder() -> Bool {
         return true
     }
-
+    
     override func motionEnded(motion: UIEventSubtype, withEvent event: UIEvent) {
         if (motion == UIEventSubtype.MotionShake) {
             self.shapes = []
         }
     }
-
+    
     override func beginTrackingWithTouch(touch: UITouch, withEvent event: UIEvent) -> Bool {
-        rectIsPending = true
         let location = touch.locationInView(self)
+        if let contentBounds = self.contentBounds {
+            if (!contentBounds.contains(location)) {
+                return false
+            }
+        }
+        rectIsPending = true
         let newRect = ResizableRectangleView()
         newRect.frame = CGRect(x: location.x, y: location.y, width: 1, height: 1)
         newRect.tintColor = self.tintColor
         self.currentRect = newRect
         self.originalLocation = location
-
+        
         CATransaction.begin()
         CATransaction.setDisableActions(true)
         for view in self.subviews {
@@ -143,10 +162,10 @@ class DrawableView: UIControl {
             }
         }
         CATransaction.commit()
-
+        
         return true
     }
-
+    
     override func continueTrackingWithTouch(touch: UITouch, withEvent event: UIEvent) -> Bool {
         if let currentRect = self.currentRect {
             if rectIsPending {
@@ -169,17 +188,17 @@ class DrawableView: UIControl {
         }
         return super.continueTrackingWithTouch(touch, withEvent: event)
     }
-
+    
     override func endTrackingWithTouch(touch: UITouch, withEvent event: UIEvent) {
         self.currentRect = nil
         self.rectIsPending = false
     }
-
+    
 }
 
 
 extension DrawableView: ColorPickerDelegate {
-
+    
     func colorPicker(picker: ColorPicker, didChangeColor color: CGColor) {
         CATransaction.begin()
         CATransaction.setDisableActions(true)
@@ -193,11 +212,11 @@ extension DrawableView: ColorPickerDelegate {
         }
         CATransaction.commit()
     }
-
+    
 }
 
 extension DrawableView: ResizableRectangleViewDelegate {
-
+    
     func didSelectResizableRectangleView(view: ResizableRectangleView) {
         self.bringSubviewToFront(self.colorPicker)
         if self.colorPicker.alpha == 0 {
@@ -206,13 +225,13 @@ extension DrawableView: ResizableRectangleViewDelegate {
             }
         }
     }
-
+    
     func didDeselectResizableRectangleView(view: ResizableRectangleView) {
         self.bringSubviewToFront(self.colorPicker)
         if colorPicker.alpha == 1 {
             let selectionCount = self.subviews.reduce(0) {
                 acc, view in
-
+                
                 if let view = view as? ResizableRectangleView {
                     return acc + (view.selected ? 1 : 0)
                 }
